@@ -1,0 +1,77 @@
+name: CI/CD — Prediction Conso Electrique
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ============================================================
+  # ÉTAPE 1 : TESTS AUTOMATIQUES (CI)
+  # ============================================================
+  tests:
+    name: Tests automatiques
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v3
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Installation des dépendances
+        run: |
+          pip install --upgrade pip
+          pip install -r src/requirements.txt
+          pip install pytest httpx
+
+      - name: Lancement de l'API en arrière-plan
+        run: |
+          cd src
+          uvicorn api:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+        env:
+          PYTHONPATH: src
+
+      - name: Test fonctionnel — endpoint /health
+        run: |
+          curl -f http://localhost:8000/health || exit 1
+
+      - name: Test fonctionnel — endpoint /predict
+        run: |
+          curl -f -X POST http://localhost:8000/predict \
+            -H "Content-Type: application/json" \
+            -d '{
+              "date": "2026-01-15",
+              "temperature": 4.5,
+              "temperature_max": 8.0,
+              "conso_j1": 72000,
+              "conso_j7": 70000,
+              "conso_moy_7j": 68000
+            }' || exit 1
+
+      - name: Tests pytest
+        run: |
+          cd src
+          pytest Tests/test_api.py -v --tb=short
+        env:
+          PYTHONPATH: src
+
+  # ============================================================
+  # ÉTAPE 2 : DÉPLOIEMENT AUTOMATIQUE SUR RENDER (CD)
+  # Déclenché uniquement si les tests passent
+  # ============================================================
+  deploy:
+    name: Déploiement sur Render
+    runs-on: ubuntu-latest
+    needs: tests  # attend que les tests passent
+    if: github.ref == 'refs/heads/main'  # uniquement sur main
+
+    steps:
+      - name: Déclenchement du redéploiement Render
+        run: |
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
