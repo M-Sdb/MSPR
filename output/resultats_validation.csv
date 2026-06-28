@@ -1,0 +1,7 @@
+﻿Modele,MAPE_validation_%
+XGBoost,1.714
+Gradient Boosting,1.738
+MLP,1.753
+Random Forest,1.834
+KNN,2.308
+Arbre de decision,2.432
