@@ -26,16 +26,13 @@ jobs:
       - name: Installation des dépendances
         run: |
           pip install --upgrade pip
-          pip install -r src/requirements.txt
+          pip install -r requirements.txt
           pip install pytest httpx
 
       - name: Lancement de l'API en arrière-plan
         run: |
-          cd src
           uvicorn api:app --host 0.0.0.0 --port 8000 &
           sleep 5
-        env:
-          PYTHONPATH: src
 
       - name: Test fonctionnel — endpoint /health
         run: |
@@ -56,10 +53,7 @@ jobs:
 
       - name: Tests pytest
         run: |
-          cd src
           pytest Tests/test_api.py -v --tb=short
-        env:
-          PYTHONPATH: src
 
   # ============================================================
   # ÉTAPE 2 : DÉPLOIEMENT AUTOMATIQUE SUR RENDER (CD)
@@ -68,8 +62,8 @@ jobs:
   deploy:
     name: Déploiement sur Render
     runs-on: ubuntu-latest
-    needs: tests  # attend que les tests passent
-    if: github.ref == 'refs/heads/main'  # uniquement sur main
+    needs: tests
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Déclenchement du redéploiement Render
