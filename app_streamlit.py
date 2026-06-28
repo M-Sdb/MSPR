@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use("Agg")
 
-API_URL = "http://127.0.0.1:8000/predict"
+API_URL = os.getenv("API_URL", "https://mspr-7yc3.onrender.com/predict")
 JOURS   = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
 TEAL    = "#2C7A73"
 ORANGE  = "#D2691E"
