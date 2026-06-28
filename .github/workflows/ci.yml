@@ -7,9 +7,6 @@ on:
     branches: [main]
 
 jobs:
-  # ============================================================
-  # ÉTAPE 1 : TESTS AUTOMATIQUES (CI)
-  # ============================================================
   tests:
     name: Tests automatiques
     runs-on: ubuntu-latest
@@ -22,6 +19,9 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+
+      - name: Debug — liste les fichiers
+        run: ls -la
 
       - name: Installation des dépendances
         run: |
@@ -55,10 +55,6 @@ jobs:
         run: |
           pytest Tests/test_api.py -v --tb=short
 
-  # ============================================================
-  # ÉTAPE 2 : DÉPLOIEMENT AUTOMATIQUE SUR RENDER (CD)
-  # Déclenché uniquement si les tests passent
-  # ============================================================
   deploy:
     name: Déploiement sur Render
     runs-on: ubuntu-latest
